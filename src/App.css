@@ -1,38 +1,568 @@
+body {
+  background-color: #f0f0f0;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.game-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin-right: 0;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+}
+
+.move-history {
+  background-color: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.game-info {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.game-status {
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #d63031;
+  font-weight: bold;
+}
+
+.chessboard-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chessboard {
+  display: grid;
+  grid-template-columns: auto repeat(8, 60px);
+  grid-template-rows: 30px repeat(8, 60px); /* Reduced height for file labels */
+  border: 8px solid #8b4513;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.file-labels, .rank-label {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background-color: #d7b899;
+  color: #5d4037;
+  font-weight: bold;
+}
+
+.file-labels {
+  grid-column: 2 / span 8;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  height: 30px; /* Set a fixed height for file labels */
+}
+
+.rank-label {
+  width: 30px;
+}
+
+.label {
+  font-size: 14px;
+  padding: 2px; /* Reduced padding */
+  text-align: center;
+}
+
+.square {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.white {
+  background-color: #f0d9b5;
+}
+
+.black {
+  background-color: #b58863;
+}
+
+.piece {
+  font-size: 45px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.piece:hover {
+  transform: scale(1.1);
+}
+
+.selected {
+  box-shadow: inset 0 0 0 4px #ffd700;
+}
+
+.possible-move::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(76, 175, 80, 0.6);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.game-button {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  width: 100%;
+  text-align: center;
+}
+
+.game-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.game-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.reset-button {
+  background-color: #f44336;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.reset-button:hover:not(:disabled) {
+  background-color: #d32f2f;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.undo-button {
+  background-color: #2196f3;
+  color: white;
+}
+
+.undo-button:hover:not(:disabled) {
+  background-color: #1976d2;
+}
+
+.redo-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.redo-button:hover:not(:disabled) {
+  background-color: #388e3c;
+}
+
+.mode-button {
+  background-color: #9c27b0;
+  color: white;
+}
+
+.mode-button:hover:not(:disabled) {
+  background-color: #7b1fa2;
+}
+
+.game-button:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+}
+
+.move-history h3 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.move-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.move-history td {
+  padding: 5px;
+  text-align: left;
+}
+
+.move-history td:first-child {
+  width: 30px;
+  color: #888;
+  font-weight: bold;
+}
+
+.move-history tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.move-history tr:hover {
+  background-color: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .App {
+    flex-direction: column;
+    align-items: center;
   }
-  to {
-    transform: rotate(360deg);
+
+  .game-container {
+    margin-right: 0;
+    margin-bottom: 20px;
   }
+
+  .sidebar {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .chessboard {
+    grid-template-columns: auto repeat(8, 40px);
+    grid-template-rows: 20px repeat(8, 40px); /* Adjusted for smaller screens */
+  }
+
+  .file-labels {
+    height: 20px; /* Adjusted height for smaller screens */
+  }
+
+  .square {
+    width: 40px;
+    height: 40px;
+  }
+
+  .rank-label {
+    width: 20px;
+  }
+
+  .piece {
+    font-size: 30px;
+  }
+
+  .label {
+    font-size: 12px;
+    padding: 1px; /* Further reduced padding for smaller screens */
+  }
+}
+
+.game-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.left-sidebar, .right-sidebar {
+  width: 250px;
+}
+
+.left-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ai-opponent {
+  background-color: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.ai-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.ai-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Update existing styles */
+.App {
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.game-container {
+  margin-right: 0;
+}
+
+@media (max-width: 1200px) {
+  .game-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .left-sidebar, .right-sidebar {
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 20px;
+  }
+}
+
+.promotion-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.promotion-modal button {
+  width: 60px;
+  height: 60px;
+  font-size: 40px;
+  background-color: #f0d9b5;
+  border: 2px solid #b58863;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.promotion-modal button:hover {
+  transform: scale(1.1);
+  background-color: #e6ccaa;
+}
+
+.promotion-modal button:active {
+  transform: scale(0.95);
+}
+
+.game-status p {
+  margin: 5px 0;
+  font-weight: bold;
+}
+
+.loading {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 20px 0;
+}
+
+.ai-thinking-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Add these new styles */
+.evil-dmitry-mode {
+  background: linear-gradient(135deg, #3a0000 0%, #8b0000 100%);
+  transition: background 1s ease;
+}
+
+.evil-dmitry-mode .game-container,
+.evil-dmitry-mode .move-history,
+.evil-dmitry-mode .ai-opponent {
+  background-color: rgba(10, 0, 0, 0.9);
+  color: #ff9999;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+.evil-dmitry-mode .game-info,
+.evil-dmitry-mode .game-status,
+.evil-dmitry-mode .move-history h3,
+.evil-dmitry-mode .ai-name {
+  color: #ff3333;
+}
+
+.evil-dmitry-mode .chessboard {
+  border-color: #800000;
+}
+
+.evil-dmitry-mode .white {
+  background-color: #d4af37;
+}
+
+.evil-dmitry-mode .black {
+  background-color: #8b4513;
+}
+
+.evil-dmitry-mode .ai-opponent {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.evil-dmitry-mode .ai-opponent::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      rgba(50, 0, 0, 0.1),
+      rgba(50, 0, 0, 0.1) 10px,
+      rgba(80, 0, 0, 0.1) 10px,
+      rgba(80, 0, 0, 0.1) 20px
+    ),
+    radial-gradient(circle at 30% 30%, rgba(255, 0, 0, 0.2), transparent 70%),
+    radial-gradient(circle at 70% 70%, rgba(200, 0, 0, 0.2), transparent 70%);
+  animation: evil-background 20s ease-in-out infinite alternate;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+@keyframes evil-background {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    transform: scale(1.1) rotate(3deg);
+  }
+}
+
+.evil-dmitry-mode .ai-avatar {
+  position: relative;
+  z-index: 1;
+  border: 3px solid #ff0000;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.evil-dmitry-mode .ai-name {
+  color: #ff3333;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+}
+
+/* Evil Dmitry mode piece colors */
+.evil-dmitry-mode .piece {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.evil-dmitry-mode .white-piece {
+  color: #ffffff !important; /* Pure white color for white pieces */
+}
+
+.evil-dmitry-mode .black-piece {
+  color: #000000 !important; /* Pure black for black pieces */
+}
+
+/* Enhance the AI thinking overlay in evil mode */
+.evil-dmitry-mode .ai-thinking-overlay {
+  background-color: rgba(50, 0, 0, 0.8);
+  color: #ff3333;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+}
+
+/* Update game buttons in evil mode */
+.evil-dmitry-mode .game-button {
+  color: #ffffff;
+  border: 1px solid #600;
+  transition: all 0.3s ease;
+}
+
+.evil-dmitry-mode .reset-button {
+  background-color: #8b0000; /* Dark red */
+}
+
+.evil-dmitry-mode .undo-button {
+  background-color: #4b0082; /* Indigo */
+}
+
+.evil-dmitry-mode .redo-button {
+  background-color: #800080; /* Purple */
+}
+
+.evil-dmitry-mode .mode-button {
+  background-color: #8b4513; /* Saddle Brown */
+}
+
+.evil-dmitry-mode .game-button:hover:not(:disabled) {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+}
+
+.evil-dmitry-mode .reset-button:hover:not(:disabled) {
+  background-color: #a50000;
+}
+
+.evil-dmitry-mode .undo-button:hover:not(:disabled) {
+  background-color: #5c009c;
+}
+
+.evil-dmitry-mode .redo-button:hover:not(:disabled) {
+  background-color: #9c009c;
+}
+
+.evil-dmitry-mode .mode-button:hover:not(:disabled) {
+  background-color: #a55a2f;
+}
+
+.evil-dmitry-mode .game-button:disabled {
+  background-color: #300;
+  color: #666;
+  border-color: #600;
 }
